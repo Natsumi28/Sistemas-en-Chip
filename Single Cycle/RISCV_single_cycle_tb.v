@@ -2,46 +2,38 @@
 
 module RISCV_single_cycle_tb;
 
-    // 1. Declaración de señales de estímulo
     reg clk;
     reg rst;
 
-    // 2. Instanciación del procesador (Módulo Top)
     RISCV_single_cycle uut (
         .clk(clk),
         .rst(rst)
     );
 
-    // 3. Generador de Reloj (Periodo de 10ns -> 100 MHz)
+    // Generador de reloj
     always begin
         #5 clk = ~clk;
     end
 
-    // 4. Bloque de estímulo principal
+    // Bloque de estímulos
     initial begin
-        // Inicializar señales de control
         clk = 0;
-        rst = 1;
+        rst = 1; // Mantiene el sistema congelado al inicio
         
-        // Inicializar valores en los registros usando la ruta de tu módulo 'Files'
-        // Esto le da datos reales al programa para operar desde el inicio
-        uut.Files.registers[5]  = 32'd15;  // x5 = 15
-        uut.Files.registers[10] = 32'd25;  // x10 = 25
-        uut.Files.registers[1]  = 32'd0;   // x1 = 0
+        // Carga de datos iniciales directamente en el Banco de Registros (x5, x10, x1)
+        uut.Files.registers[5]  = 32'd15;  
+        uut.Files.registers[10] = 32'd25;  
+        uut.Files.registers[1]  = 32'd0;   
 
-        // Esperar 12ns (un momento desalineado del flanco) y liberar el reset
         #12; 
-        rst = 0; 
+        rst = 0; // Libera el reset para arrancar el procesador
         
-        // 5. Tiempo total de ejecución
-        // Dejamos correr la simulación por 250ns para procesar las 20 instrucciones
-        #250;
+        #250;    // Tiempo suficiente para ejecutar las 20 instrucciones del programa
         
         $display("Simulación terminada con éxito.");
-        $finish;
+        $finish; // Detiene la ejecución en Questa
     end
 
-    // 6. Monitor de consola para verificar el avance del PC en la pestaña Transcript
     initial begin
         $monitor("Tiempo: %0t | PC: %h | Instrucción actual (RD): %h", $time, uut.PC, uut.RD);
     end
